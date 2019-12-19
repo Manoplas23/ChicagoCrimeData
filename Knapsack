@@ -1,0 +1,32 @@
+Option Explicit
+Private aSchedule As Schedule
+
+Public Sub Knapsack(ByVal thisSchedule As Schedule)
+    Set aSchedule = thisSchedule
+    Dim allOfficers As Integer, test As Double
+    Dim maxSeverityCluster As Cluster
+    Set maxSeverityCluster = aSchedule.GetClusterList.Item(1)
+    Dim aCluster As Cluster
+    For Each aCluster In aSchedule.GetClusterList
+        aCluster.AssignShift1 (Application.WorksheetFunction.Floor_Math((aCluster.cWeightTotal / TotalWeight) * aSchedule.Shift1Percent * aSchedule.GetTotalOfficers))
+        aCluster.AssignShift2 (Application.WorksheetFunction.Floor_Math((aCluster.cWeightTotal / TotalWeight) * aSchedule.Shift2Percent * aSchedule.GetTotalOfficers))
+        aCluster.AssignShift3 (Application.WorksheetFunction.Floor_Math((aCluster.cWeightTotal / TotalWeight) * aSchedule.Shift3Percent * aSchedule.GetTotalOfficers))
+        allOfficers = allOfficers + (aCluster.Shift1Officers + aCluster.Shift2Officers + aCluster.Shift3Officers)
+        If aCluster.cWeightTotal > maxSeverityCluster.cWeightTotal Then
+            Set maxSeverityCluster = aCluster
+        End If
+    Next
+    If allOfficers < aSchedule.GetTotalOfficers Then
+        maxSeverityCluster.AssignShift3 (maxSeverityCluster.Shift3Officers + (aSchedule.GetTotalOfficers - allOfficers))
+    End If
+    
+End Sub
+
+Public Function TotalWeight() As Double
+    Dim aCluster As Cluster
+    Dim total As Double
+    For Each aCluster In aSchedule.GetClusterList
+        total = total + aCluster.cWeightTotal
+    Next
+    TotalWeight = total
+End Function
